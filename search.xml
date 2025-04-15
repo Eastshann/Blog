@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>系统重启cifs自动挂载设置</title>
+      <link href="/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/"/>
+      <url>/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/</url>
+      
+        <content type="html"><![CDATA[<h3 id="第一步-为每个账户创建单独的-credentials-文件"><a href="#第一步-为每个账户创建单独的-credentials-文件" class="headerlink" title="第一步 为每个账户创建单独的 credentials 文件"></a>第一步 为每个账户创建单独的 <code>credentials</code> 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/samba/账户1</span><br></pre></td></tr></table></figure><p>内容：</p><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">username</span>=xxx</span><br><span class="line"><span class="attr">password</span>=xxx</span><br></pre></td></tr></table></figure><p>设置权限：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">chmod</span> 600 /etc/samba/账户1</span><br></pre></td></tr></table></figure><h3 id="第二步-编辑-etc-fstab-文件"><a href="#第二步-编辑-etc-fstab-文件" class="headerlink" title="第二步 编辑 /etc/fstab 文件"></a>第二步 编辑 <code>/etc/fstab</code> 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/fstab</span><br></pre></td></tr></table></figure><p>在文件末尾添加一行来配置自动挂载：</p><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">挂载路径  挂载点  cifs  <span class="attr">credentials</span>=/etc/samba/用户<span class="number">1</span>,vers=<span class="number">3.0</span>,iocharset=utf8  <span class="number">0</span>  <span class="number">0</span></span><br></pre></td></tr></table></figure><p><strong>挂载路径：</strong></p><ul><li>这是共享路径。</li></ul><p><strong>挂载点：</strong></p><ul><li>本地挂载点，表示挂载的位置。</li></ul><p><strong><code>cifs</code>：</strong></p><ul><li>指定使用 CIFS 文件系统（用于挂载网络共享）。</li></ul><p><strong>挂载选项：</strong></p><ul><li><code>credentials</code>：指定凭据文件。</li><li><code>vers=2.1</code>：指定 SMB 协议版本（如共享服务器使用 SMB 2.1）。</li><li><code>iocharset=utf8</code>：支持中文文件名等 UTF-8 字符。</li></ul><p><strong>最后两个数字：</strong></p><ul><li><code>0</code>：转储频率，通常为 0（不转储）。</li><li><code>0</code>：文件系统检查顺序，通常为 0（不检查）。</li></ul><h3 id="第三步-测试挂载"><a href="#第三步-测试挂载" class="headerlink" title="第三步 测试挂载"></a>第三步 测试挂载</h3><p><code>sudo mount -a</code> 是一种常用的 Linux 命令，主要用于根据 <code>/etc/fstab</code> 文件中的配置挂载所有<strong>未挂载</strong>的文件系统。</p><p><em>挂载丢失后也可以使用这个命令</em></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> mount -a</span><br></pre></td></tr></table></figure><p>如果没有报错，可以通过以下命令验证挂载：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">df</span> -h</span><br></pre></td></tr></table></figure><h3 id="第四步-nfs配置"><a href="#第四步-nfs配置" class="headerlink" title="第四步 nfs配置"></a>第四步 nfs配置</h3><p>使用文本编辑器打开 <code>/etc/fstab</code> 文件：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/fstab</span><br></pre></td></tr></table></figure><p>NFS 默认不使用用户名&#x2F;密码，而是依赖 IP 地址和文件系统权限进行控制。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gzeds2.scc.com:/G2AOI/AOI/Archive  /home/workspace/AOI/Archive  nfs  vers=3,tcp,nolock,async,mountproto=tcp,rsize=1048576,wsize=1048576  0  0</span><br></pre></td></tr></table></figure><p><strong>服务器路径</strong></p><ul><li><strong><code>gzeds2.scc.com:/G2AOI/AOI/Archive</code></strong>：<br>表示 NFS 服务器地址 <code>gzeds2.scc.com</code> 和共享目录 <code>/G2AOI/AOI/Archive</code>。</li></ul><p><strong>本地挂载点</strong></p><ul><li><strong><code>/home/workspace/AOI/Archive</code></strong>：<br>本地挂载目录，挂载成功后，NFS 的内容将显示在此目录下。</li></ul><p><strong>文件系统类型</strong></p><ul><li><strong><code>nfs</code></strong>：<br>指定使用 NFS 文件系统挂载。</li></ul><p><strong>挂载选项</strong></p><ul><li><strong><code>vers=3</code></strong>：使用 NFSv3 协议。</li><li><strong><code>tcp</code></strong>：使用 TCP 协议代替 UDP，通常更稳定，适合大文件传输。</li><li><strong><code>nolock</code></strong>：禁用文件锁定机制（适用于某些不需要锁的应用场景）。</li><li><strong><code>async</code></strong>：启用异步写入，提高性能。</li><li><strong><code>mountproto=tcp</code></strong>：指定挂载协议为 TCP。</li><li><strong><code>rsize=1048576,wsize=1048576</code></strong>：设置读写缓冲区大小为 1MB，提高传输性能。</li></ul><p><strong><code>0 0</code></strong></p><ul><li>第一个 <code>0</code>：不使用 <code>dump</code> 工具备份。</li><li>第二个 <code>0</code>：不检查文件系统。</li></ul><p>​</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 开发 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>设置samba共享目录</title>
       <link href="/2025/04/14/%E8%AE%BE%E7%BD%AEsamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/"/>
       <url>/2025/04/14/%E8%AE%BE%E7%BD%AEsamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/</url>
@@ -20,9 +45,9 @@
       
         <tags>
             
-            <tag> samba </tag>
-            
             <tag> Linux </tag>
+            
+            <tag> samba </tag>
             
         </tags>
       

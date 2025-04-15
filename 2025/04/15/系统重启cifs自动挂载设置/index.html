@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>系统重启cifs自动挂载设置 | Eastshann</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+var toggle = document.querySelector('.darkmode-toggle');
+var html = document.querySelector('html');
+
+html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
+
+toggle.addEventListener('click', () => {
+localStorage.dark = !(html.dataset.dark == 'true');
+html.dataset.dark = localStorage.dark;
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">系统重启cifs自动挂载设置</h1><a id="logo" href="/.">Eastshann</a><p class="description">始于2001</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 主页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/tags/"><i class="fa fa-tags"> 标签</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/histories/"><i class="fa fa-book"> 历史</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">系统重启cifs自动挂载设置</h1><div class="post-meta">2025-04-15<span> | </span><span class="category"><a href="/categories/%E5%BC%80%E5%8F%91/">开发</a></span></div><div class="post-content"><h3 id="第一步-为每个账户创建单独的-credentials-文件"><a href="#第一步-为每个账户创建单独的-credentials-文件" class="headerlink" title="第一步 为每个账户创建单独的 credentials 文件"></a>第一步 为每个账户创建单独的 <code>credentials</code> 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/samba/账户1</span><br></pre></td></tr></table></figure>
+
+<p>内容：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">username</span>=xxx</span><br><span class="line"><span class="attr">password</span>=xxx</span><br></pre></td></tr></table></figure>
+
+<p>设置权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">chmod</span> 600 /etc/samba/账户1</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="第二步-编辑-etc-fstab-文件"><a href="#第二步-编辑-etc-fstab-文件" class="headerlink" title="第二步 编辑 /etc/fstab 文件"></a>第二步 编辑 <code>/etc/fstab</code> 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/fstab</span><br></pre></td></tr></table></figure>
+
+<p>在文件末尾添加一行来配置自动挂载：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">挂载路径  挂载点  cifs  <span class="attr">credentials</span>=/etc/samba/用户<span class="number">1</span>,vers=<span class="number">3.0</span>,iocharset=utf8  <span class="number">0</span>  <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>挂载路径：</strong></p>
+<ul>
+<li>这是共享路径。</li>
+</ul>
+<p><strong>挂载点：</strong></p>
+<ul>
+<li>本地挂载点，表示挂载的位置。</li>
+</ul>
+<p><strong><code>cifs</code>：</strong></p>
+<ul>
+<li>指定使用 CIFS 文件系统（用于挂载网络共享）。</li>
+</ul>
+<p><strong>挂载选项：</strong></p>
+<ul>
+<li><code>credentials</code>：指定凭据文件。</li>
+<li><code>vers=2.1</code>：指定 SMB 协议版本（如共享服务器使用 SMB 2.1）。</li>
+<li><code>iocharset=utf8</code>：支持中文文件名等 UTF-8 字符。</li>
+</ul>
+<p><strong>最后两个数字：</strong></p>
+<ul>
+<li><code>0</code>：转储频率，通常为 0（不转储）。</li>
+<li><code>0</code>：文件系统检查顺序，通常为 0（不检查）。</li>
+</ul>
+<h3 id="第三步-测试挂载"><a href="#第三步-测试挂载" class="headerlink" title="第三步 测试挂载"></a>第三步 测试挂载</h3><p><code>sudo mount -a</code> 是一种常用的 Linux 命令，主要用于根据 <code>/etc/fstab</code> 文件中的配置挂载所有<strong>未挂载</strong>的文件系统。</p>
+<p><em>挂载丢失后也可以使用这个命令</em></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> mount -a</span><br></pre></td></tr></table></figure>
+
+<p>如果没有报错，可以通过以下命令验证挂载：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">df</span> -h</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="第四步-nfs配置"><a href="#第四步-nfs配置" class="headerlink" title="第四步 nfs配置"></a>第四步 nfs配置</h3><p>使用文本编辑器打开 <code>/etc/fstab</code> 文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nano /etc/fstab</span><br></pre></td></tr></table></figure>
+
+<p>NFS 默认不使用用户名&#x2F;密码，而是依赖 IP 地址和文件系统权限进行控制。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gzeds2.scc.com:/G2AOI/AOI/Archive  /home/workspace/AOI/Archive  nfs  vers=3,tcp,nolock,async,mountproto=tcp,rsize=1048576,wsize=1048576  0  0</span><br></pre></td></tr></table></figure>
+
+<p><strong>服务器路径</strong></p>
+<ul>
+<li><strong><code>gzeds2.scc.com:/G2AOI/AOI/Archive</code></strong>：<br>表示 NFS 服务器地址 <code>gzeds2.scc.com</code> 和共享目录 <code>/G2AOI/AOI/Archive</code>。</li>
+</ul>
+<p><strong>本地挂载点</strong></p>
+<ul>
+<li><strong><code>/home/workspace/AOI/Archive</code></strong>：<br>本地挂载目录，挂载成功后，NFS 的内容将显示在此目录下。</li>
+</ul>
+<p><strong>文件系统类型</strong></p>
+<ul>
+<li><strong><code>nfs</code></strong>：<br>指定使用 NFS 文件系统挂载。</li>
+</ul>
+<p><strong>挂载选项</strong></p>
+<ul>
+<li><strong><code>vers=3</code></strong>：使用 NFSv3 协议。</li>
+<li><strong><code>tcp</code></strong>：使用 TCP 协议代替 UDP，通常更稳定，适合大文件传输。</li>
+<li><strong><code>nolock</code></strong>：禁用文件锁定机制（适用于某些不需要锁的应用场景）。</li>
+<li><strong><code>async</code></strong>：启用异步写入，提高性能。</li>
+<li><strong><code>mountproto=tcp</code></strong>：指定挂载协议为 TCP。</li>
+<li><strong><code>rsize=1048576,wsize=1048576</code></strong>：设置读写缓冲区大小为 1MB，提高传输性能。</li>
+</ul>
+<p><strong><code>0 0</code></strong></p>
+<ul>
+<li>第一个 <code>0</code>：不使用 <code>dump</code> 工具备份。</li>
+<li>第二个 <code>0</code>：不检查文件系统。</li>
+</ul>
+<p>​	</p>
+</div><div class="tags"><ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul></div><div class="post-nav"><a class="next" href="/2025/04/14/%E8%AE%BE%E7%BD%AEsamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/">设置samba共享目录</a></div></div></div></div><div class="pure-u-1 pure-u-md-1-4"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>To be a better man.</p><a class="info-icon" href="https://twitter.com/username" title="Twitter" target="_blank" style="margin-inline:5px"> <i class="fa fa-twitter-square" style="margin-inline:5px"></i></a><a class="info-icon" href="mailto:admin@domain.com" title="Email" target="_blank" style="margin-inline:5px"> <i class="fa fa-envelope-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://github.com/Eastshann" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="/atom.xml" title="RSS" target="_blank" style="margin-inline:5px"> <i class="fa fa-rss-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BC%80%E5%8F%91/">开发</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%98%8E%E6%97%A5%E6%96%B9%E8%88%9F/">明日方舟</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/%E6%B5%8B%E8%AF%95/" style="font-size: 15px;">测试</a> <a href="/tags/%E5%86%99%E4%BD%9C/" style="font-size: 15px;">写作</a> <a href="/tags/K8S/" style="font-size: 15px;">K8S</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/Ngnix/" style="font-size: 15px;">Ngnix</a> <a href="/tags/samba/" style="font-size: 15px;">samba</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/">系统重启cifs自动挂载设置</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/04/14/%E8%AE%BE%E7%BD%AEsamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/">设置samba共享目录</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/04/14/%E8%85%BE%E8%AE%AF%E4%BA%91OpenCloudOS%E7%B3%BB%E7%BB%9F%E4%B8%8B%E5%AE%89%E8%A3%85ngnix%E6%8A%A5%E9%94%99/">腾讯云OpenCloudOS系统下安装ngnix报错</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/07/31/LaTex%E5%85%AC%E5%BC%8F/">LaTex公式</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/07/02/charles%E6%8A%93%E5%8C%85/">charles抓包</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/07/01/Git%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/">Git版本控制</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/06/20/%E9%99%88/">陈</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/06/04/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%9D%99%E6%80%81ip%E9%85%8D%E7%BD%AE/">虚拟机静态ip配置</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/05/31/K8S%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/">K8S虚拟机集群配置</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2025 <a href="/." rel="nofollow">Eastshann.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+  search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>
