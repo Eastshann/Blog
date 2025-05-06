@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>本地仓库关联GitHub远程仓库</title>
+      <link href="/2025/05/06/%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%85%B3%E8%81%94GitHub%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/"/>
+      <url>/2025/05/06/%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%85%B3%E8%81%94GitHub%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/</url>
+      
+        <content type="html"><![CDATA[<p><strong>步骤一：创建GitHub仓库</strong></p><ol><li>登录GitHub</li><li>点击右上角的 <strong>+</strong>，选择 <strong>New repository</strong></li><li>填写仓库名等信息，点击 <strong>Create repository</strong></li></ol><p><strong>步骤二：在本地初始化 Git 仓库（如果还没有）</strong></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> your-project-folder</span><br><span class="line">git init</span><br></pre></td></tr></table></figure><p><strong>步骤三：添加远程仓库地址</strong></p><p>复制 GitHub 仓库的地址（HTTPS 或 SSH）：</p><p>例如：</p><ul><li><strong>HTTPS:</strong> <code>https://github.com/your-username/your-repo.git</code></li><li><strong>SSH:</strong> <code>git@github.com:your-username/your-repo.git</code></li></ul><p>在本地仓库中执行：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin https://github.com/your-username/your-repo.git</span><br></pre></td></tr></table></figure><p>或者（用 SSH）：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@github.com:your-username/your-repo.git</span><br></pre></td></tr></table></figure><p><strong>步骤四：推送本地代码到 GitHub</strong></p><p>第一次推送代码，并设置上游分支：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git add .</span><br><span class="line">git commit -m <span class="string">&quot;Initial commit&quot;</span></span><br><span class="line">git push -u origin master  <span class="comment"># 如果主分支是 master</span></span><br></pre></td></tr></table></figure><p>或者：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin main  <span class="comment"># 如果主分支是 main</span></span><br></pre></td></tr></table></figure><p><strong>检查是否关联成功</strong></p><p>运行下面命令查看远程仓库：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote -v</span><br></pre></td></tr></table></figure><p>输出应包含 GitHub 的仓库地址。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 开发 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> git </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>系统重启cifs自动挂载设置</title>
       <link href="/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/"/>
       <url>/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/</url>
