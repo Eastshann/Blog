@@ -1,0 +1,492 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>Pandas缺失数据处理 | Eastshann</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+var toggle = document.querySelector('.darkmode-toggle');
+var html = document.querySelector('html');
+
+html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
+
+toggle.addEventListener('click', () => {
+localStorage.dark = !(html.dataset.dark == 'true');
+html.dataset.dark = localStorage.dark;
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Pandas缺失数据处理</h1><a id="logo" href="/.">Eastshann</a><p class="description">始于2001</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 主页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/tags/"><i class="fa fa-tags"> 标签</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/histories/"><i class="fa fa-book"> 历史</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Pandas缺失数据处理</h1><div class="post-meta">2025-05-14<span> | </span><span class="category"><a href="/categories/%E5%BC%80%E5%8F%91/">开发</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E5%A4%B1%E5%80%BC%E4%B8%8E%E7%A9%BA%E5%80%BC"><span class="toc-number">1.</span> <span class="toc-text">缺失值与空值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%88%A4%E6%96%AD"><span class="toc-number">2.</span> <span class="toc-text">缺失值判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E6%9C%89%E7%BC%BA%E5%A4%B1%E5%80%BC"><span class="toc-number">3.</span> <span class="toc-text">判断是否有缺失值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E7%9C%81%E5%80%BC%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">缺省值处理方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%9C%81%E5%80%BC%E8%BF%87%E6%BB%A4"><span class="toc-number">4.1.</span> <span class="toc-text">缺省值过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E7%BC%BA%E7%9C%81%E5%80%BC"><span class="toc-number">4.2.</span> <span class="toc-text">删除缺省值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A1%AB%E5%85%85"><span class="toc-number">4.3.</span> <span class="toc-text">缺失值填充</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%9D%87%E5%80%BC%EF%BC%8C%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%8C%E6%9C%80%E5%A4%A7%E5%80%BC%EF%BC%8C%E6%9C%80%E5%B0%8F%E5%80%BC"><span class="toc-number">4.4.</span> <span class="toc-text">插入均值，中位数，最大值，最小值</span></a></li></ol></li></ol></div></div><div class="post-content"><h2 id="缺失值与空值"><a href="#缺失值与空值" class="headerlink" title="缺失值与空值"></a>缺失值与空值</h2><p>**缺省值：**数据集中数值为空的值, pandas使用<code>Nan</code> &#x2F; <code>NaT</code> 表示</p>
+<p>**空值：**空字符串 <code>&quot;&quot;</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="literal">None</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="literal">None</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line">pdata</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NaN</td>
+<td>7.5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>NaN</td>
+</tr>
+</tbody></table>
+<h2 id="缺失值判断"><a href="#缺失值判断" class="headerlink" title="缺失值判断"></a>缺失值判断</h2><p>判断方法：</p>
+<ul>
+<li><code>pd.isnull()</code>：缺省值对应的值为True，返回值为Boolean的Series或者DataFrame对象</li>
+<li><code>pd.notnull()</code>：缺省值对应的值为False，返回值为Boolean的Series或者DataFrame对象</li>
+<li><code>pdata.isnull()</code> &#x2F; <code>pdata.notnull()</code> ：同上</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sdata = pd.Series([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>, np.NaN])</span><br><span class="line">pd.isnull(sdata)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span>    <span class="literal">False</span></span><br><span class="line"><span class="number">1</span>    <span class="literal">False</span></span><br><span class="line"><span class="number">2</span>    <span class="literal">False</span></span><br><span class="line"><span class="number">3</span>     <span class="literal">True</span></span><br><span class="line">dtype: <span class="built_in">bool</span></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="literal">None</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="literal">None</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line">pd.isnull(pdata)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>1</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>3</td>
+<td>False</td>
+<td>True</td>
+</tr>
+</tbody></table>
+<h2 id="判断是否有缺失值"><a href="#判断是否有缺失值" class="headerlink" title="判断是否有缺失值"></a>判断是否有缺失值</h2><p><strong>方式1：</strong><code>np.all</code> 与 <code>pd.notnull</code>结合</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="literal">None</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="literal">None</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line"><span class="comment"># pd.notnull,若包含缺省值，缺省值对应值为False</span></span><br><span class="line"><span class="comment"># np.all：若对象中包含假，返回False， 否则返回真</span></span><br><span class="line">np.<span class="built_in">all</span>(pd.notnull(pdata))</span><br><span class="line"><span class="comment"># 返回False， 说明包含缺省值，否则不包含缺省值</span></span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line">np.<span class="built_in">all</span>(pd.notnull(pdata))</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方式2：</strong><code>np.any</code> 与 <code>pd.isnull</code>结合</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line"><span class="comment"># isnull：缺省值对应值为True</span></span><br><span class="line"><span class="comment"># any:对象中包含真，返回True</span></span><br><span class="line">np.<span class="built_in">any</span>(pd.isnull(pdata))</span><br><span class="line"><span class="comment"># 返回False,说明不含缺省值，返回True说明包括缺省值</span></span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="缺省值处理方式"><a href="#缺省值处理方式" class="headerlink" title="缺省值处理方式"></a>缺省值处理方式</h2><p>缺省值处理：</p>
+<ul>
+<li>过滤缺省值(按行列)</li>
+<li>删除缺省值(按行列)</li>
+<li>填充值，填充值方式：</li>
+<li>插入均值，中位数,最大值，最小值等</li>
+<li>插入特殊值</li>
+<li>插入前(后)值入前(后)值</li>
+</ul>
+<h3 id="缺省值过滤"><a href="#缺省值过滤" class="headerlink" title="缺省值过滤"></a>缺省值过滤</h3><p>举例：某两只股票1周收盘值，None表示当前停盘</p>
+<p>需求：获取两只股票都没有停牌的数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据：某两只股票1周收盘值，None表示当前停盘</span></span><br><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="literal">None</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="literal">None</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2&#125;)</span><br><span class="line">pdata</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NaN</td>
+<td>7.5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>NaN</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 需求：获取两只股票都没有停牌的数据</span></span><br><span class="line"><span class="comment"># 获取boolean索引</span></span><br><span class="line">bindex = np.<span class="built_in">all</span>(pdata.notnull(), axis=<span class="number">1</span>)</span><br><span class="line">bindex</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span>     <span class="literal">True</span></span><br><span class="line"><span class="number">1</span>     <span class="literal">True</span></span><br><span class="line"><span class="number">2</span>    <span class="literal">False</span></span><br><span class="line"><span class="number">3</span>    <span class="literal">False</span></span><br><span class="line">dtype: <span class="built_in">bool</span></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获取没有停牌数据</span></span><br><span class="line">pdata[bindex]</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+</tr>
+</tbody></table>
+<h3 id="删除缺省值"><a href="#删除缺省值" class="headerlink" title="删除缺省值"></a>删除缺省值</h3><p><code>pdata.dropna(axis=0, how=&#39;any&#39;, thresh=None, subset=None, inplace=False)</code></p>
+<p>主要参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>axis</td>
+<td>0 或 ‘index’：按行操作，1 或 ‘columns’：按列操作</td>
+</tr>
+<tr>
+<td>how</td>
+<td>根据 axis 指定操作方式，any：只要有一个 Na 就删除，all：全部为 Na 才删除</td>
+</tr>
+<tr>
+<td>thresh</td>
+<td>指定非 Na 值的数量，非 Na 数量大于等于 thresh 时不删除</td>
+</tr>
+<tr>
+<td>subset</td>
+<td>指定操作的列子集</td>
+</tr>
+<tr>
+<td>inplace</td>
+<td>True：在原始数据中进行修改</td>
+</tr>
+</tbody></table>
+<p>准备数据：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">s1 = [<span class="number">10</span>, <span class="number">10.5</span>, <span class="literal">None</span>, <span class="number">11</span>]</span><br><span class="line">s2 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="literal">None</span>]</span><br><span class="line">s3 = [<span class="number">7</span>, <span class="number">6.9</span>,<span class="number">7.5</span>,<span class="number">7</span>]</span><br><span class="line">s4 = [<span class="literal">None</span>, <span class="number">6.9</span>,<span class="literal">None</span>,<span class="number">7.2</span>]</span><br><span class="line">pdata = pd.DataFrame(&#123;<span class="string">&#x27;s1&#x27;</span>:s1, <span class="string">&#x27;s2&#x27;</span>:s2, <span class="string">&#x27;s3&#x27;</span>:s3,<span class="string">&#x27;s4&#x27;</span>:s4&#125;)</span><br><span class="line">pdata</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+<th>s3</th>
+<th>s4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>NaN</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NaN</td>
+<td>7.5</td>
+<td>7.5</td>
+<td>NaN</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>NaN</td>
+<td>7.0</td>
+<td>7.2</td>
+</tr>
+</tbody></table>
+<p>需求：</p>
+<ol>
+<li>删除包含缺省值的行</li>
+<li>删除包含2个缺省值行</li>
+<li>删除指定列包含缺省值</li>
+<li>删除包含缺省值的列</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 删除包含缺省值行</span></span><br><span class="line">pdata.dropna()</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+<th>s3</th>
+<th>s4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>6.9</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 缺省值数量大于1，thresh设置为3</span></span><br><span class="line"><span class="comment"># thresh:指定非Na数量(非Na数量&gt;=thresh，不删除)</span></span><br><span class="line">pdata.dropna(thresh=<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+<th>s3</th>
+<th>s4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>NaN</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>NaN</td>
+<td>7.0</td>
+<td>7.2</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定列：[&#x27;s1&#x27;,&#x27;s4&#x27;]</span></span><br><span class="line">pdata.dropna(subset=[<span class="string">&#x27;s1&#x27;</span>,<span class="string">&#x27;s4&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>7.5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>7.0</td>
+</tr>
+</tbody></table>
+<p>注意：</p>
+<ul>
+<li>以上数据删除都不对原始数据进行修改</li>
+<li>指定inplace为True，在原始数据中进行修改</li>
+</ul>
+<h3 id="缺失值填充"><a href="#缺失值填充" class="headerlink" title="缺失值填充"></a>缺失值填充</h3><p>填充方法：</p>
+<p><code>pdata.fillna(value=None, method=None, axis=None, inplace=False, limit=None, downcast=None, **kwargs)</code></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>value</code></td>
+<td>填充值</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td>填充方式：<code>&#123;&#39;backfill&#39;, &#39;bfill&#39;, &#39;pad&#39;, &#39;ffill&#39;, None&#125;</code></td>
+</tr>
+<tr>
+<td><code>axis</code></td>
+<td>指定行列：<code>0</code> 或 <code>&#39;index&#39;</code> 表示按行，<code>1</code> 或 <code>&#39;columns&#39;</code> 表示按列</td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td>插入数量限制</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pdata</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+<th>s3</th>
+<th>s4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>NaN</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NaN</td>
+<td>7.5</td>
+<td>7.5</td>
+<td>NaN</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>NaN</td>
+<td>7.0</td>
+<td>7.2</td>
+</tr>
+</tbody></table>
+<p>需求：</p>
+<ul>
+<li>缺省值填充固定值0</li>
+<li>使用前&#x2F;后面数据填充</li>
+<li>使用均值填充</li>
+<li>插入均值插入均值</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 固定值0</span></span><br><span class="line">pdata.fillna(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>s1</th>
+<th>s2</th>
+<th>s3</th>
+<th>s4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>10.0</td>
+<td>7.0</td>
+<td>7.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>10.5</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>6.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.0</td>
+<td>7.5</td>
+<td>7.5</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>11.0</td>
+<td>0.0</td>
+<td>7.0</td>
+<td>7.2</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用前一行数据填充</span></span><br><span class="line">pdata.fillna(method=<span class="string">&#x27;ffill&#x27;</span>)</span><br><span class="line"><span class="comment"># 使用向前填充 (ffill) 替代 fillna</span></span><br><span class="line">pdata.ffill()</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用后一行数据填充</span></span><br><span class="line">pdata.fillna(method=<span class="string">&#x27;bfill&#x27;</span>)</span><br><span class="line"><span class="comment"># 使用向后填充 (bfill) 替代 fillna</span></span><br><span class="line">pdata.bfill()</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用后一列数据填充</span></span><br><span class="line">pdata.fillna(axis=<span class="number">1</span>,method=<span class="string">&#x27;bfill&#x27;</span>)</span><br><span class="line"><span class="comment"># 使用向后填充 (bfill) 替代 fillna</span></span><br><span class="line">pdata.bfill(axis=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>对于股票缺省值，我们倾向于，使用前一天数据填充缺失值</p>
+<h3 id="插入均值，中位数，最大值，最小值"><a href="#插入均值，中位数，最大值，最小值" class="headerlink" title="插入均值，中位数，最大值，最小值"></a>插入均值，中位数，最大值，最小值</h3><p><code>pdata.mean/max/min/median(axis=None, skipna=None, level=None, numeric_only=None, **kwargs)</code></p>
+<p>主要参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>axis</code></td>
+<td>方向，<code>0</code> 表示按列，<code>1</code> 表示按行</td>
+</tr>
+<tr>
+<td><code>skipna</code></td>
+<td>是否忽略 NaN，<code>True</code> 表示不计算 NaN，默认为 <code>True</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#插入均值</span></span><br><span class="line">pdata.fillna(pdata.mean())</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#插入中位数</span></span><br><span class="line">pdata.fillna(pdata.median())</span><br></pre></td></tr></table></figure>
+
+</div><div class="tags"><ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Pandas/" rel="tag">Pandas</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" rel="tag">数据分析</a></li></ul></div><div class="post-nav"><a class="next" href="/2025/05/14/Pandas%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%85%A5%E4%B8%8E%E4%BF%9D%E5%AD%98/">Pandas数据导入与保存</a></div></div></div></div><div class="pure-u-1 pure-u-md-1-4"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>To be a better man.</p><a class="info-icon" href="https://twitter.com/username" title="Twitter" target="_blank" style="margin-inline:5px"> <i class="fa fa-twitter-square" style="margin-inline:5px"></i></a><a class="info-icon" href="mailto:admin@domain.com" title="Email" target="_blank" style="margin-inline:5px"> <i class="fa fa-envelope-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://github.com/Eastshann" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="/atom.xml" title="RSS" target="_blank" style="margin-inline:5px"> <i class="fa fa-rss-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BC%80%E5%8F%91/">开发</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%98%8E%E6%97%A5%E6%96%B9%E8%88%9F/">明日方舟</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/%E6%B5%8B%E8%AF%95/" style="font-size: 15px;">测试</a> <a href="/tags/%E5%86%99%E4%BD%9C/" style="font-size: 15px;">写作</a> <a href="/tags/K8S/" style="font-size: 15px;">K8S</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/Ngnix/" style="font-size: 15px;">Ngnix</a> <a href="/tags/samba/" style="font-size: 15px;">samba</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 15px;">数据分析</a> <a href="/tags/Pandas/" style="font-size: 15px;">Pandas</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/Anaconda/" style="font-size: 15px;">Anaconda</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2025/05/14/Pandas%E7%BC%BA%E5%A4%B1%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/">Pandas缺失数据处理</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/05/14/Pandas%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%85%A5%E4%B8%8E%E4%BF%9D%E5%AD%98/">Pandas数据导入与保存</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/05/08/Anaconda%E5%A4%87%E5%BF%98%E5%BD%95/">Anaconda备忘录</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/05/08/Pandas%E5%9F%BA%E7%A1%80%E2%80%94%E2%80%94DataFrame%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">Pandas基础——DataFrame数据结构</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/05/07/Pandas%E5%9F%BA%E7%A1%80%E2%80%94%E2%80%94Series%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">Pandas基础——Series数据结构</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/05/06/%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%85%B3%E8%81%94GitHub%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/">本地仓库关联GitHub远程仓库</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/04/15/%E7%B3%BB%E7%BB%9F%E9%87%8D%E5%90%AFcifs%E8%87%AA%E5%8A%A8%E6%8C%82%E8%BD%BD%E8%AE%BE%E7%BD%AE/">系统重启cifs自动挂载设置</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/04/14/%E8%AE%BE%E7%BD%AEsamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/">设置samba共享目录</a></li><li class="post-list-item"><a class="post-list-link" href="/2025/04/14/%E8%85%BE%E8%AE%AF%E4%BA%91OpenCloudOS%E7%B3%BB%E7%BB%9F%E4%B8%8B%E5%AE%89%E8%A3%85ngnix%E6%8A%A5%E9%94%99/">腾讯云OpenCloudOS系统下安装ngnix报错</a></li><li class="post-list-item"><a class="post-list-link" href="/2024/07/31/LaTex%E5%85%AC%E5%BC%8F/">LaTex公式</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2025 <a href="/." rel="nofollow">Eastshann.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+  search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>
